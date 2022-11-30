@@ -6,6 +6,7 @@ type Config struct {
 	Redis         RedisConfig         `yaml:"redis" mapstructure:"redis"`
 	MySQL         MySQLConfig         `yaml:"mysql" mapstructure:"mysql"`
 	MongoDB       MongoDBConfig       `yaml:"mongodb" mapstructure:"mongodb"`
+	JWT           JWT                 `yaml:"jwt" mapstructure:"jwt"`
 }
 
 type KafkaConfig struct {
@@ -36,4 +37,9 @@ type MongoDBConfig struct {
 	Addresses []string `yaml:"addresses" mapstructure:"addresses"`
 	Username  string   `yaml:"username" mapstructure:"username"`
 	Password  string   `yaml:"password" mapstructure:"password"`
+}
+
+type JWT struct {
+	Secret      string `yaml:"secret" mapstructure:"secret"`
+	ExpiredTime string `yaml:"expired_time" mapstructure:"expired_time"`
 }
