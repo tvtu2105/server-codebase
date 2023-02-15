@@ -1,0 +1,21 @@
+syntax = "proto3";
+package pb;
+
+import "request.proto";
+import "google/api/annotations.proto";
+
+service BaseServer{
+  rpc HelloWorld(Request) returns (Response){
+    option(google.api.http) = {
+      post: "/hello",
+      body: "*"
+    };
+  }
+}
+
+
+message Response{
+  int32 code = 1;
+  string message = 2;
+  string data = 3;
+}

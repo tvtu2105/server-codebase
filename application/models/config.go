@@ -7,6 +7,7 @@ type Config struct {
 	MySQL         MySQLConfig         `yaml:"mysql" mapstructure:"mysql"`
 	MongoDB       MongoDBConfig       `yaml:"mongodb" mapstructure:"mongodb"`
 	JWT           JWT                 `yaml:"jwt" mapstructure:"jwt"`
+	Server        Server              `yaml:"server" mapstructure:"server"`
 }
 
 type KafkaConfig struct {
@@ -42,4 +43,10 @@ type MongoDBConfig struct {
 type JWT struct {
 	Secret      string `yaml:"secret" mapstructure:"secret"`
 	ExpiredTime string `yaml:"expired_time" mapstructure:"expired_time"`
+}
+
+type Server struct {
+	Env      string `yaml:"env" mapstructure:"env"`
+	GrpcPort int    `yaml:"grpc_port" mapstructure:"grpc_port"`
+	HttpPort int    `yaml:"http_port" mapstructure:"http_port"`
 }

@@ -1,17 +1,18 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
-	"google.golang.org/grpc"
+	"os"
+	"os/signal"
 	"sever-codebase/application/configs"
-	"sever-codebase/application/middlewares/jwt"
-	"sever-codebase/application/middlewares/log"
-	rate_limit "sever-codebase/application/middlewares/rate-limit"
+	"sever-codebase/application/models"
+	"syscall"
+	"time"
 )
 
 func main() {
+	//init env and config
 	env, err := configs.LoadEnv()
 	cfg, err := configs.LoadConfig("conf/", env)
 	if err != nil {
@@ -19,34 +20,33 @@ func main() {
 	}
 	fmt.Println("Config: ", cfg)
 
-	//init jwt
-	s := grpc.NewServer(initStreamOptions(), initUnaryOptions())
-	fmt.Println(s)
-	//init service
-
-	// init grpc server
-
-	//init middleware
-
-	//limit resource
-
 	//force shutdown
+	forceQuit(cfg)
 
-	//start server
+	//config grpc gateway server
+	StartGrpcGatewayServer(cfg)
 
+	// start grpc server
+	StartGrpcServer(cfg)
 }
 
-func initStreamOptions() grpc.ServerOption {
-	return grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
-		grpc_auth.StreamServerInterceptor(jwt.Authenticate),
-		rate_limit.LimitRateStream(nil),
-	))
-}
-
-func initUnaryOptions() grpc.ServerOption {
-	return grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
-		log.LogUnaryServerInterceptor(nil),
-		grpc_auth.UnaryServerInterceptor(jwt.Authenticate),
-		rate_limit.LimitRateUnary(nil),
-	))
+func forceQuit(cfg *models.Config) {
+	// handle signal
+	_, ctxCancel := context.WithCancel(context.Background())
+	go func() {
+		osSignal := make(chan os.Signal, 1)
+		signal.Notify(osSignal, syscall.SIGINT, syscall.SIGTERM)
+		<-osSignal
+		ctxCancel()
+		// Wait for maximum 15s
+		go func() {
+			var durationSec time.Duration = 15
+			if cfg.Server.Env == "D" {
+				durationSec = 1
+			}
+			timer := time.NewTimer(durationSec * time.Second)
+			<-timer.C
+			//ll.Fatal("Force shutdown due to timeout!")
+		}()
+	}()
 }
